@@ -1,7 +1,7 @@
-QuadTree A*
+QuadTree QLearn
 ===========
 
-Python program showing A* path finding on quadtree representation of a 2D map.
+Python program showing Q-Learn path finding on quadtree representation of a 2D map.
 
 ```bash
 python3 demo.py
