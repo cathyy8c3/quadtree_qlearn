@@ -2,7 +2,11 @@
 
     (c) Volker Poplawski 2018
 """
+import copy
+
 from mapgen import IMPASSABLE, PASSABLE
+import numpy as np
+from __init__ import state_mark
 
 
 ##############
@@ -41,7 +45,7 @@ class BoundingBox:
 
 
 
-
+leaves = []
 
 class Tile:
     """
@@ -78,9 +82,13 @@ class Tile:
         """
         Number of tiles in quadtree/subtree
         """
+
         if not self.childs:
+            if self not in leaves:
+                leaves.append(self)
             return 1
         else:
+            # leaves.append(self)
             return 1 + sum((child.count() for child in self.childs))
         
 
@@ -126,6 +134,7 @@ class Tile:
             # image is uniformly colored
             # Tile is a leaf Tile i.e. no childs 
             # recursion ends here. color is the uniform color of the image
+            # leaves.append(self)
             self.color = image.getcolors()[0][1]
         else:            
             # image is not uniformly colored i.e. has more than one color 
@@ -133,6 +142,7 @@ class Tile:
                 # depth limit is given and Tile is at limit
                 # forces a leaf Tile
                 # end recursion here and (arbitrary) set color of Tile
+                # leaves.append(self)
                 self.color = PASSABLE
             else:
                 # not a leaf Tile
@@ -157,13 +167,35 @@ class Tile:
         return "l:{} {},{} {}:{}".format(self.level, self.bb.x, self.bb.y, self.bb.w, self.bb.h)
 
 
+    def flatten(self, state):
+        envstate = np.zeros(len(leaves))
+        state_index = leaves.index(state)
 
+        for i in range(len(envstate)):
+            if leaves[i].color == PASSABLE:
+                envstate[i] = 1.0
 
+        envstate[state_index] = state_mark
+        temp = np.array([envstate])
 
+        return temp
 
+    def passable_cells(self):
+        free = []
 
+        for tile in leaves:
+            if tile.color == PASSABLE:
+                free.append(tile)
 
+        return free
 
-
-
-
+    # def get_childs(self, tile, children):
+    #     if len(self.childs) == 0:
+    #         children.append(self)
+    #         return children
+    #     else:
+    #         self.get_childs(self.childs[UL], children)
+    #         self.get_childs(self.childs[UR], children)
+    #         self.get_childs(self.childs[LL], children)
+    #         self.get_childs(self.childs[LR], children)
+    #     return children

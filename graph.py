@@ -39,8 +39,8 @@ def make_adjacent_function(quadtree):
     """
     def adjacent(node):
         """
-        Return nodes (Tiles) adjacent to node
-        adjacent nodes are not impassable and can be directly reached from node
+        Return leaves (Tiles) adjacent to node
+        adjacent leaves are not impassable and can be directly reached from node
         """
         a = []
         for neighbour in neighbours(quadtree, node):

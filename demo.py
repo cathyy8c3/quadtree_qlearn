@@ -6,8 +6,8 @@ from tkinter import *
 from PIL import ImageTk, ImageDraw
 import mapgen
 import quadtree
-import astar
 import graph
+from qlearn import run_qlearn
 
 
 # square map height and width. power of 2. e.g 256, 512, 1024
@@ -82,7 +82,7 @@ class MainObject:
         label.pack(side=LEFT, pady=4)
 
         var = StringVar(self.root)
-        var.set("100")        
+        var.set("5")
         self.limitspin = Spinbox(frame1, from_=2, to=100, textvariable=var)
         self.limitspin.pack(expand=True)
         
@@ -93,18 +93,18 @@ class MainObject:
         quadtreebtn = Button(qtframe, text="Generate QuadTree", command=self.onButtonQuadTreePress)
         quadtreebtn.pack(pady=2)
         
-        astarframe = Frame(rightframe, relief=SUNKEN, borderwidth=2)
-        astarframe.pack(fill=X, padx=5, pady=5)
+        qlearnframe = Frame(rightframe, relief=SUNKEN, borderwidth=2)
+        qlearnframe.pack(fill=X, padx=5, pady=5)
                 
-        label = Label(astarframe, text="Path", font=("Helvetica", 13))
+        label = Label(qlearnframe, text="Path", font=("Helvetica", 13))
         label.pack()
 
         self.pathlabelvar = StringVar()
-        label = Label(astarframe, fg='#0000FF', textvariable=self.pathlabelvar)
+        label = Label(qlearnframe, fg='#0000FF', textvariable=self.pathlabelvar)
         label.pack()
 
-        self.astarlabelvar = StringVar()
-        label = Label(astarframe, fg='#8080FF', textvariable=self.astarlabelvar)
+        self.qlearnlabelvar = StringVar()
+        label = Label(qlearnframe, fg='#8080FF', textvariable=self.qlearnlabelvar)
         label.pack()
 
         label = Label(rightframe, text="Instructions", font=("Helvetica", 13))
@@ -135,23 +135,25 @@ class MainObject:
         goal = self.quadtree.get(event.x, event.y)
 
         adjacent = graph.make_adjacent_function(self.quadtree)
-        path, distances, considered = astar.astar(adjacent, graph.euclidian, graph.euclidian, start, goal)
 
-        im = self.qtmapimage.copy()
-        draw = ImageDraw.Draw(im)
-
-        self.astarlabelvar.set("Nodes visited: {} considered: {}".format(len(distances), considered))
-        for tile in distances:
-            fill_tile(draw, tile, color=(0xC0, 0xC0, 0xFF))
-
-        if path:
-            self.pathlabelvar.set("Path Cost: {}  Nodes: {}".format(round(distances[goal], 1), len(path)))
-            for tile in path:
-                fill_tile(draw, tile, color=(0, 0, 255))
-        else:
-            self.pathlabelvar.set("No Path found.")
-
-        self._updateimage(im)
+        run_qlearn(self.quadtree, start, goal)
+        # path, distances, considered = astar.astar(adjacent, graph.euclidian, graph.euclidian, start, goal)
+        #
+        # im = self.qtmapimage.copy()
+        # draw = ImageDraw.Draw(im)
+        #
+        # self.qlearnlabelvar.set("Nodes visited: {} considered: {}".format(len(distances), considered))
+        # for tile in distances:
+        #     fill_tile(draw, tile, color=(0xC0, 0xC0, 0xFF))
+        #
+        # if path:
+        #     self.pathlabelvar.set("Path Cost: {}  Nodes: {}".format(round(distances[goal], 1), len(path)))
+        #     for tile in path:
+        #         fill_tile(draw, tile, color=(0, 0, 255))
+        # else:
+        #     self.pathlabelvar.set("No Path found.")
+        #
+        # self._updateimage(im)
 
     
     def onMouseButton1Release(self, event):
@@ -175,7 +177,7 @@ class MainObject:
         self.qtlabelvar.set("") 
         self.canvas.delete(self.startpoint)
         self.startpoint = None
-        self.astarlabelvar.set("")
+        self.qlearnlabelvar.set("")
         self.pathlabelvar.set("")
         self.root.config(cursor="")        
         
@@ -186,13 +188,16 @@ class MainObject:
         
         depthlimit = int(self.limitspin.get())
         self.quadtree = quadtree.Tile(self.mapimage, limit=depthlimit)
+        quadtree.leaves.clear()
+        print("Number of nodes: " + str(self.quadtree.count()))
+        print("Number of leaves: " + str(len(quadtree.leaves)))
         self.qtmapimage = self.mapimage.copy()
         draw = ImageDraw.Draw(self.qtmapimage)
         draw_quadtree(draw, self.quadtree, 8)
         self._updateimage(self.qtmapimage)
         
         self.qtlabelvar.set("Depth: {}  Nodes: {}".format(self.quadtree.depth(), self.quadtree.count()))
-        self.astarlabelvar.set("")
+        self.qlearnlabelvar.set("")
         self.pathlabelvar.set("")
         
         if not self.startpoint:
