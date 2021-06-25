@@ -88,7 +88,8 @@ class Tile:
                 leaves.append(self)
             return 1
         else:
-            # leaves.append(self)
+            # if self not in leaves:
+            #     leaves.append(self)
             return 1 + sum((child.count() for child in self.childs))
         
 
@@ -168,8 +169,11 @@ class Tile:
 
 
     def flatten(self, state):
+        state_index = -1
         envstate = np.zeros(len(leaves))
-        state_index = leaves.index(state)
+        for i in range(len(leaves)):
+            if (state.center() == leaves[i].center()):
+                state_index = i
 
         for i in range(len(envstate)):
             if leaves[i].color == PASSABLE:

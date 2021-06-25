@@ -35,14 +35,19 @@ class Qmaze(object):
         if curr_state.color == PASSABLE:
             self.visited.add(curr_state)  # mark visited cell
 
-        valid_actions = self.valid_actions(curr_state)
-        print("Type: " + str(type(valid_actions)))
+        valid_actions = self.valid_actions()
+        # print("Type: " + str(type(valid_actions)))
+
+        # print("Action: " + str(action))
+        # print(valid_actions)
 
         if not valid_actions:
             nmode = 'blocked'
-        elif action in valid_actions:
+        elif action >= len(valid_actions):
+            mode = 'invalid'
+        elif valid_actions[action] in valid_actions:
             nmode = 'valid'
-            next_state = action
+            next_state = valid_actions[action]
         else:  # invalid action, no change in rat position
             mode = 'invalid'
 
@@ -69,6 +74,9 @@ class Qmaze(object):
         self.total_reward += reward
         status = self.game_status()
         envstate = self.observe()
+
+        # print("Reward: " + str(self.total_reward))
+        # print("Status: " + str(status))
         return envstate, reward, status
 
     def observe(self):
@@ -93,7 +101,7 @@ class Qmaze(object):
             return 'lose'
         curr_state, mode = self.state
         size = self.size
-        if curr_state == self.target:
+        if curr_state.center() == self.target.center():
             return 'win'
 
         return 'not_over'
@@ -103,9 +111,11 @@ class Qmaze(object):
             curr_state, mode = self.state
         else:
             curr_state = cell
-        actions = make_adjacent_function(curr_state)
 
-        return actions(curr_state)
+        temp = make_adjacent_function(self.quadtree)
+        actions = temp(curr_state)
+
+        return actions
 
 # def show(qmaze):
 #     plt.grid('on')

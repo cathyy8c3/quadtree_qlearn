@@ -31,7 +31,7 @@ def qtrain(model, maze, start, goal, **opt):
     for epoch in range(n_epoch):
         # print("Starting training")
         loss = 0.0
-        rat_cell = random.choice(qmaze.free_cells)
+        rat_cell = start
         qmaze.reset(rat_cell)
         game_over = False
 
@@ -46,18 +46,26 @@ def qtrain(model, maze, start, goal, **opt):
             prev_envstate = envstate
             # Get next action
             if np.random.rand() < epsilon:
-                action = random.choice(valid_actions)
+                # print("Exploring")
+                action = random.randint(0, len(valid_actions)-1)
             else:
-                # print("Dimensions: " + str(prev_envstate.shape))
-                action = np.argmax(experience.predict(prev_envstate))
+                # print("Exploiting")
+                temp = experience.predict(prev_envstate)
+                action = np.argmax(temp)
 
             # Apply action, get reward and new envstate
             envstate, reward, game_status = qmaze.act(action)
+            # print(qmaze.state)
+            # print(qmaze.target)
+            # print("Status: " + str(game_status))
+
             if game_status == 'win':
                 win_history.append(1)
+                # print("Win")
                 game_over = True
             elif game_status == 'lose':
                 win_history.append(0)
+                # print("Lose")
                 game_over = True
             else:
                 game_over = False
@@ -81,7 +89,7 @@ def qtrain(model, maze, start, goal, **opt):
         if len(win_history) > hsize:
             win_rate = sum(win_history[-hsize:]) / hsize
 
-        print(envstate)
+        # print(envstate)
 
         dt = datetime.datetime.now() - start_time
         t = format_time(dt.total_seconds())

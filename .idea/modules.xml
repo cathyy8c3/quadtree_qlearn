@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/quadtree_Astar.iml" filepath="$PROJECT_DIR$/.idea/quadtree_Astar.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/quadtree_qlearn.iml" filepath="$PROJECT_DIR$/.idea/quadtree_qlearn.iml" />
     </modules>
   </component>
 </project>

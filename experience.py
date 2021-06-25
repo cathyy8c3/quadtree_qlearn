@@ -34,6 +34,7 @@ class Experience(object):
             Q_sa = np.max(self.predict(envstate_next))
             if game_over:
                 targets[i, action] = reward
+                #TODO: write function to map tile to integer
             else:
                 # reward + gamma * max_a' Q(s', a')
                 targets[i, action] = reward + self.discount * Q_sa
