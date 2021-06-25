@@ -5,8 +5,10 @@
 from tkinter import *
 from PIL import ImageTk, ImageDraw
 import mapgen
+import qmaze
 import quadtree
 import graph
+from qmaze import play_game, Qmaze
 from qlearn import run_qlearn
 
 
@@ -134,26 +136,27 @@ class MainObject:
         start = self.quadtree.get(startx + 6, starty + 6)
         goal = self.quadtree.get(event.x, event.y)
 
-        adjacent = graph.make_adjacent_function(self.quadtree)
+        model = run_qlearn(self.quadtree, start, goal)
+        maze = Qmaze(self.quadtree, start, goal)
 
-        run_qlearn(self.quadtree, start, goal)
-        # path, distances, considered = astar.astar(adjacent, graph.euclidian, graph.euclidian, start, goal)
-        #
-        # im = self.qtmapimage.copy()
-        # draw = ImageDraw.Draw(im)
-        #
+        path = play_game(model, maze, start)
+        print(path)
+
+        im = self.qtmapimage.copy()
+        draw = ImageDraw.Draw(im)
+
         # self.qlearnlabelvar.set("Nodes visited: {} considered: {}".format(len(distances), considered))
         # for tile in distances:
         #     fill_tile(draw, tile, color=(0xC0, 0xC0, 0xFF))
-        #
-        # if path:
-        #     self.pathlabelvar.set("Path Cost: {}  Nodes: {}".format(round(distances[goal], 1), len(path)))
-        #     for tile in path:
-        #         fill_tile(draw, tile, color=(0, 0, 255))
-        # else:
-        #     self.pathlabelvar.set("No Path found.")
-        #
-        # self._updateimage(im)
+
+        if path:
+            # self.pathlabelvar.set("Path Cost: {}  Nodes: {}".format(round(distances[goal], 1), len(path)))
+            for tile in path:
+                fill_tile(draw, tile, color=(0, 0, 255))
+        else:
+            self.pathlabelvar.set("No Path found.")
+
+        self._updateimage(im)
 
     
     def onMouseButton1Release(self, event):

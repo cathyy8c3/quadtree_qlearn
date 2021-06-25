@@ -137,6 +137,8 @@ class Qmaze(object):
 
 def play_game(model, qmaze, start):
     qmaze.reset(start)
+    path = []
+
     envstate = qmaze.observe()
     while True:
         prev_envstate = envstate
@@ -144,10 +146,14 @@ def play_game(model, qmaze, start):
         q = model.predict(prev_envstate)
         action = np.argmax(q[0])
 
+        valid_actions = qmaze.valid_actions()
+        move = valid_actions[action]
+        path.append(move)
+
         # apply action, get rewards and new state
         envstate, reward, game_status = qmaze.act(action)
         if game_status == 'win':
-            return True
+            return path
         elif game_status == 'lose':
             return False
 
