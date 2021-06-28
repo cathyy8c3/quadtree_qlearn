@@ -97,6 +97,9 @@ class Qmaze(object):
     #     return canvas
 
     def game_status(self):
+        # print("Rewards: ")
+        # print(self.total_reward)
+        # print(self.min_reward)
         if self.total_reward < self.min_reward:
             return 'lose'
         curr_state, mode = self.state
@@ -137,6 +140,25 @@ class Qmaze(object):
 
 def play_game(model, qmaze, start):
     qmaze.reset(start)
+
+    envstate = qmaze.observe()
+    while True:
+        prev_envstate = envstate
+        # get next action
+        q = model.predict(prev_envstate)
+        action = np.argmax(q[0])
+
+        # apply action, get rewards and new state
+        envstate, reward, game_status = qmaze.act(action)
+        if game_status == 'win':
+            print("Win")
+            return True
+        elif game_status == 'lose':
+            print("Lose")
+            return False
+
+def run_game(model, qmaze, start):
+    qmaze.reset(start)
     path = []
 
     envstate = qmaze.observe()
@@ -147,20 +169,32 @@ def play_game(model, qmaze, start):
         action = np.argmax(q[0])
 
         valid_actions = qmaze.valid_actions()
+
+        # print("Action: ")
+        # print(action)
+        # print(valid_actions)
+        # try:
+        #     print(valid_actions[action])
+        # except:
+        #     print("Invalid action")
+
         move = valid_actions[action]
         path.append(move)
 
         # apply action, get rewards and new state
         envstate, reward, game_status = qmaze.act(action)
+
         if game_status == 'win':
             return path
         elif game_status == 'lose':
-            return False
+            return []
 
 def completion_check(model, qmaze):
     for cell in qmaze.free_cells:
         if not qmaze.valid_actions(cell):
+            print("Not valid actions")
             return False
         if not play_game(model, qmaze, cell):
+            print("Not play game")
             return False
     return True

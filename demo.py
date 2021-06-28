@@ -8,7 +8,7 @@ import mapgen
 import qmaze
 import quadtree
 import graph
-from qmaze import play_game, Qmaze
+from qmaze import run_game, Qmaze
 from qlearn import run_qlearn
 
 
@@ -139,7 +139,7 @@ class MainObject:
         model = run_qlearn(self.quadtree, start, goal)
         maze = Qmaze(self.quadtree, start, goal)
 
-        path = play_game(model, maze, start)
+        path = run_game(model, maze, start)
         print(path)
 
         im = self.qtmapimage.copy()

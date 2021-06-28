@@ -46,10 +46,10 @@ def qtrain(model, maze, start, goal, **opt):
             prev_envstate = envstate
             # Get next action
             if np.random.rand() < epsilon:
-                # print("Exploring")
+                print("Exploring")
                 action = random.randint(0, len(valid_actions)-1)
             else:
-                # print("Exploiting")
+                print("Exploiting")
                 temp = experience.predict(prev_envstate)
                 action = np.argmax(temp)
 
@@ -98,7 +98,11 @@ def qtrain(model, maze, start, goal, **opt):
         # we simply check if training has exhausted all free cells and if in all
         # cases the agent won
         if win_rate > 0.9: epsilon = 0.05
-        if sum(win_history[-hsize:]) == hsize and completion_check(model, qmaze):
+        # print("Testing: ")
+        # print(sum(win_history[-hsize:]))
+        # print(hsize)
+        # if sum(win_history[-hsize:]) == hsize and completion_check(model, qmaze):
+        if sum(win_history[-hsize:]) == hsize:
             print("Reached 100%% win rate at epoch: %d" % (epoch,))
             break
 
