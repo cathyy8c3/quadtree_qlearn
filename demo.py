@@ -10,10 +10,13 @@ import quadtree
 import graph
 from qmaze import run_game, Qmaze
 from qlearn import run_qlearn
+from qtrain import build_model
 
 
 # square map height and width. power of 2. e.g 256, 512, 1024
 MAPSIZE = 512
+
+TRAINED = False
 
 
 class MainObject:
@@ -136,7 +139,10 @@ class MainObject:
         start = self.quadtree.get(startx + 6, starty + 6)
         goal = self.quadtree.get(event.x, event.y)
 
-        model = run_qlearn(self.quadtree, start, goal)
+        maze = Qmaze(self.quadtree, start, goal)
+
+        model = run_qlearn(self.quadtree, start)
+
         maze = Qmaze(self.quadtree, start, goal)
 
         path = run_game(model, maze, start)
@@ -188,7 +194,7 @@ class MainObject:
     def onButtonQuadTreePress(self):
         if not self.mapimage:
             return
-        
+
         depthlimit = int(self.limitspin.get())
         self.quadtree = quadtree.Tile(self.mapimage, limit=depthlimit)
         quadtree.leaves.clear()

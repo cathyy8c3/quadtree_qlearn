@@ -31,8 +31,8 @@ def qtrain(model, maze, start, goal, **opt):
     for epoch in range(n_epoch):
         # print("Starting training")
         loss = 0.0
-        rat_cell = start
-        qmaze.reset(rat_cell)
+        start_state = start
+        qmaze.reset(start_state)
         game_over = False
 
         # get initial envstate (1d flattened canvas)
@@ -46,10 +46,10 @@ def qtrain(model, maze, start, goal, **opt):
             prev_envstate = envstate
             # Get next action
             if np.random.rand() < epsilon:
-                print("Exploring")
+                # print("Exploring")
                 action = random.randint(0, len(valid_actions)-1)
             else:
-                print("Exploiting")
+                # print("Exploiting")
                 temp = experience.predict(prev_envstate)
                 action = np.argmax(temp)
 
@@ -105,6 +105,10 @@ def qtrain(model, maze, start, goal, **opt):
         if sum(win_history[-hsize:]) == hsize:
             print("Reached 100%% win rate at epoch: %d" % (epoch,))
             break
+        # if not sum(win_history[-hsize:]) == hsize and completion_check(model, qmaze):
+        #     print("Not First")
+        # if sum(win_history[-hsize:]) == hsize and not completion_check(model, qmaze):
+        #     print("Not Second")
 
     # Save trained model weights and architecture, this will be used by the visualization code
     h5file = name + ".h5"

@@ -8,20 +8,19 @@ import quadtree as qtree
 class Qmaze(object):
     def __init__(self, quadtree, start, goal):
         self._quadtree = quadtree
-        self.size = len(qtree.leaves)
+        self.size = len(leaves)
         self.target = goal  # target cell where the "cheese" is
         self.free_cells = self._quadtree.passable_cells()
         if self.target.color != PASSABLE:
             raise Exception("Invalid maze: target cell cannot be blocked!")
         if start.color != PASSABLE:
-            raise Exception("Invalid Rat Location: must sit on a free cell")
+            raise Exception("Invalid Location: must sit on a free cell")
         self.reset(start)
 
     def reset(self, state):
-        self.state = state
         self.quadtree = copy.deepcopy(self._quadtree)
-        self.size = len(qtree.leaves)
-        self.state = (state, 'start')
+        self.size = len(leaves)
+        self.state = (state, 'valid')
         self.min_reward = -0.5 * self.size
         self.total_reward = 0
         self.visited = set()
@@ -39,17 +38,23 @@ class Qmaze(object):
         # print("Type: " + str(type(valid_actions)))
 
         # print("Action: " + str(action))
-        # print(valid_actions)
+        # print(curr_state)
+        # print(mode)
+        # print(self.target)
+        # print(leaves)
+
+        valid = False
+        for leaf in valid_actions:
+            if leaves[action].equals(leaf):
+                valid = True
 
         if not valid_actions:
             nmode = 'blocked'
-        elif action >= len(valid_actions):
-            mode = 'invalid'
-        elif valid_actions[action] in valid_actions:
+        elif valid:
             nmode = 'valid'
-            next_state = valid_actions[action]
-        else:  # invalid action, no change in rat position
-            mode = 'invalid'
+            next_state = leaves[action]
+        else:  # invalid action, no change in position
+            nmode = 'invalid'
 
         # new state
         self.state = (next_state, nmode)
@@ -57,11 +62,17 @@ class Qmaze(object):
     def get_reward(self):
         curr_state, mode = self.state
         size = self.size
-        if curr_state == self.target:
+
+        visited = False
+        for leaf in self.visited:
+            if curr_state.center() == leaf:
+                visited = True
+
+        if curr_state.center() == self.target.center():
             return 1.0
         if mode == 'blocked':
             return self.min_reward - 1
-        if curr_state in self.visited:
+        if visited:
             return -0.25
         if mode == 'invalid':
             return -0.75
@@ -81,7 +92,7 @@ class Qmaze(object):
 
     def observe(self):
         curr_state, mode = self.state
-        return self.quadtree.flatten(curr_state)
+        return self.quadtree.flatten(curr_state, self.target)
 
     # def draw_env(self):
     #     canvas = np.copy(self.quadtree)
@@ -104,6 +115,9 @@ class Qmaze(object):
             return 'lose'
         curr_state, mode = self.state
         size = self.size
+
+        print(curr_state)
+        print(self.target)
         if curr_state.center() == self.target.center():
             return 'win'
 
@@ -114,6 +128,7 @@ class Qmaze(object):
             curr_state, mode = self.state
         else:
             curr_state = cell
+            # print("Cell: " + str(cell))
 
         temp = make_adjacent_function(self.quadtree)
         actions = temp(curr_state)
@@ -150,6 +165,8 @@ def play_game(model, qmaze, start):
 
         # apply action, get rewards and new state
         envstate, reward, game_status = qmaze.act(action)
+
+        print(game_status)
         if game_status == 'win':
             print("Win")
             return True
@@ -164,25 +181,28 @@ def run_game(model, qmaze, start):
     envstate = qmaze.observe()
     while True:
         prev_envstate = envstate
+        # print(prev_envstate)
         # get next action
         q = model.predict(prev_envstate)
         action = np.argmax(q[0])
 
-        valid_actions = qmaze.valid_actions()
-
-        # print("Action: ")
-        # print(action)
-        # print(valid_actions)
         # try:
-        #     print(valid_actions[action])
+        #     valid_actions[action]
         # except:
         #     print("Invalid action")
+        #     print("Action: ")
+        #     print(action)
+        #     print(curr_state)
+        #     print(qmaze.target)
+        #     print(valid_actions)
 
-        move = valid_actions[action]
+        move = leaves[action]
         path.append(move)
 
         # apply action, get rewards and new state
         envstate, reward, game_status = qmaze.act(action)
+
+        print(game_status)
 
         if game_status == 'win':
             return path
