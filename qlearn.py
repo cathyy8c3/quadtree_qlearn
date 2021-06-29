@@ -12,22 +12,20 @@ def run_qlearn(quadtree, start, goal):
 
     model = build_model(len(leaves))
 
-    qtrain(model, quadtree, start, goal, n_epoch=100, max_memory=8 * quadtree.count(), data_size=32)
-    #
-    # if not trained:
-    #     count = 0
-    #     for leaf in leaves:
-    #         print("Leaf: " + str(count))
-    #         count += 1
-    #         if not leaf.color == PASSABLE:
-    #             continue
-    #         elif leaf.center() == start.center():
-    #             continue
-    #         elif not floodfill(start, leaf, quadtree):
-    #             continue
-    #
-    #         qtrain(model, quadtree, start, leaf, n_epoch=100, max_memory=8 * quadtree.count(), data_size=32)
-    # else:
-    #     model.load_weights("model.h5")
+    if not trained:
+        count = 0
+        for leaf in leaves:
+            print("Leaf: " + str(count))
+            count += 1
+            if not leaf.color == PASSABLE:
+                continue
+            elif leaf.center() == start.center():
+                continue
+            elif not floodfill(start, leaf, quadtree):
+                continue
+
+            qtrain(model, quadtree, start, leaf, n_epoch=100, max_memory=8 * quadtree.count(), data_size=32)
+    else:
+        model.load_weights("model.h5")
 
     return model
