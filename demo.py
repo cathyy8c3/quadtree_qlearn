@@ -141,7 +141,7 @@ class MainObject:
 
         maze = Qmaze(self.quadtree, start, goal)
 
-        model = run_qlearn(self.quadtree, start)
+        model = run_qlearn(self.quadtree, start, goal)
 
         maze = Qmaze(self.quadtree, start, goal)
 

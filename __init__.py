@@ -8,7 +8,7 @@ from keras.layers.advanced_activations import PReLU
 import matplotlib.pyplot as plt
 
 state_mark = 0.3
-goal_mark = 10.0
+goal_mark = 0.9
 
 # Exploration factor
 epsilon = 0.1

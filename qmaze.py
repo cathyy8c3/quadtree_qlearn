@@ -1,9 +1,5 @@
-from __init__ import *
-from mapgen import PASSABLE, IMPASSABLE
 from graph import make_adjacent_function
-import copy
 from quadtree import *
-import quadtree as qtree
 
 class Qmaze(object):
     def __init__(self, quadtree, start, goal):
@@ -11,10 +7,16 @@ class Qmaze(object):
         self.size = len(leaves)
         self.target = goal  # target cell where the "cheese" is
         self.free_cells = self._quadtree.passable_cells()
+        self.determine = False
+
+        if start.center() == goal.center():
+            raise Exception("Invalid Location: cannot route to itself")
         if self.target.color != PASSABLE:
             raise Exception("Invalid maze: target cell cannot be blocked!")
         if start.color != PASSABLE:
             raise Exception("Invalid Location: must sit on a free cell")
+        if not floodfill(start, goal, quadtree):
+            raise Exception("Goal is unreachable")
         self.reset(start)
 
     def reset(self, state):
@@ -31,21 +33,15 @@ class Qmaze(object):
         next_state = curr_state
         nmode = mode
 
+        # if self.determine:
         if curr_state.color == PASSABLE:
             self.visited.add(curr_state)  # mark visited cell
 
         valid_actions = self.valid_actions()
-        # print("Type: " + str(type(valid_actions)))
-
-        # print("Action: " + str(action))
-        # print(curr_state)
-        # print(mode)
-        # print(self.target)
-        # print(leaves)
 
         valid = False
         for leaf in valid_actions:
-            if leaves[action].equals(leaf):
+            if leaf.center() == leaves[action].center():
                 valid = True
 
         if not valid_actions:
@@ -58,6 +54,11 @@ class Qmaze(object):
 
         # new state
         self.state = (next_state, nmode)
+        # else:
+
+    def action_prob(self, action):
+
+        return None
 
     def get_reward(self):
         curr_state, mode = self.state
@@ -86,38 +87,27 @@ class Qmaze(object):
         status = self.game_status()
         envstate = self.observe()
 
+        # curr_state, mode = self.state
+        # print("Current : " + str(curr_state) + "\t" + str(mode))
+        # print("Goal: " + str(self.target))
+        # print(self.valid_actions())
         # print("Reward: " + str(self.total_reward))
         # print("Status: " + str(status))
+        # print(envstate)
+        # print()
+
         return envstate, reward, status
 
     def observe(self):
         curr_state, mode = self.state
         return self.quadtree.flatten(curr_state, self.target)
 
-    # def draw_env(self):
-    #     canvas = np.copy(self.quadtree)
-    #     nrows, ncols = self.quadtree.shape
-    #     # clear all visual marks
-    #     for r in range(nrows):
-    #         for c in range(ncols):
-    #             if canvas[r, c] > 0.0:
-    #                 canvas[r, c] = 1.0
-    #     # draw the rat
-    #     row, col, valid = self.state
-    #     canvas[row, col] = rat_mark
-    #     return canvas
-
     def game_status(self):
-        # print("Rewards: ")
-        # print(self.total_reward)
-        # print(self.min_reward)
         if self.total_reward < self.min_reward:
             return 'lose'
         curr_state, mode = self.state
         size = self.size
 
-        print(curr_state)
-        print(self.target)
         if curr_state.center() == self.target.center():
             return 'win'
 
@@ -128,30 +118,11 @@ class Qmaze(object):
             curr_state, mode = self.state
         else:
             curr_state = cell
-            # print("Cell: " + str(cell))
 
         temp = make_adjacent_function(self.quadtree)
         actions = temp(curr_state)
 
         return actions
-
-# def show(qmaze):
-#     plt.grid('on')
-#     nrows, ncols = qmaze.quadtree.shape
-#     ax = plt.gca()
-#     ax.set_xticks(np.arange(0.5, nrows, 1))
-#     ax.set_yticks(np.arange(0.5, ncols, 1))
-#     ax.set_xticklabels([])
-#     ax.set_yticklabels([])
-#     canvas = np.copy(qmaze.quadtree)
-#     for row,col in qmaze.visited:
-#         canvas[row,col] = 0.6
-#     rat_row, rat_col, _ = qmaze.state
-#     canvas[rat_row, rat_col] = 0.3   # rat cell
-#     canvas[nrows-1, ncols-1] = 0.9 # cheese cell
-#     img = plt.imshow(canvas, interpolation='none', cmap='gray')
-#     print("Plot shown")
-#     return img
 
 def play_game(model, qmaze, start):
     qmaze.reset(start)
@@ -181,20 +152,10 @@ def run_game(model, qmaze, start):
     envstate = qmaze.observe()
     while True:
         prev_envstate = envstate
-        # print(prev_envstate)
+
         # get next action
         q = model.predict(prev_envstate)
         action = np.argmax(q[0])
-
-        # try:
-        #     valid_actions[action]
-        # except:
-        #     print("Invalid action")
-        #     print("Action: ")
-        #     print(action)
-        #     print(curr_state)
-        #     print(qmaze.target)
-        #     print(valid_actions)
 
         move = leaves[action]
         path.append(move)
@@ -218,3 +179,30 @@ def completion_check(model, qmaze):
             print("Not play game")
             return False
     return True
+
+def floodfill(start, goal, quadtree):
+    visited = set()
+    queue = []
+
+    adj = make_adjacent_function(quadtree)
+
+    queue.append(start)
+    visited.add(start)
+
+    while queue:
+        next_leaf = queue.pop(0)
+        # print("Next: " + str(next_leaf))
+        visited.add(next_leaf)
+        # print(visited)
+
+        for leaf1 in adj(next_leaf):
+            if (not leaf1 in visited) and leaf1.color == PASSABLE:
+                queue.append(leaf1)
+
+    for leaf2 in visited:
+        if leaf2.center() == goal.center():
+            return True
+
+    # print(visited)
+
+    return False

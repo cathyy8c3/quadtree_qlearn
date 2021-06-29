@@ -1,28 +1,33 @@
-from qtrain import *
+from qtrain import build_model, qtrain
 from quadtree import leaves
+from mapgen import PASSABLE
+from qmaze import floodfill
 
-def run_qlearn(quadtree, start):
+def run_qlearn(quadtree, start, goal):
     use_file = input("Do you want to load weights from an existing file? (y/n)\t")
     if use_file == "y":
         trained = True
     else:
         trained = False
 
-    qmaze = Qmaze(quadtree, start, start)
-    model = build_model(qmaze)
+    model = build_model(len(leaves))
 
-    if not trained:
-        count = 0
-        for leaf in leaves:
-            print("Leaf: " + str(count))
-            count += 1
-            if leaf.color == PASSABLE and not leaf.center() == start.center():
-                qtrain(model, quadtree, start, leaf, epochs=1000, max_memory=8 * quadtree.count(), data_size=32)
-    else:
-        model.load_weights("model.h5")
-
-    # print("Passable: ")
-    # for leaf in leaves:
-    #     print(leaf.color)
+    qtrain(model, quadtree, start, goal, n_epoch=100, max_memory=8 * quadtree.count(), data_size=32)
+    #
+    # if not trained:
+    #     count = 0
+    #     for leaf in leaves:
+    #         print("Leaf: " + str(count))
+    #         count += 1
+    #         if not leaf.color == PASSABLE:
+    #             continue
+    #         elif leaf.center() == start.center():
+    #             continue
+    #         elif not floodfill(start, leaf, quadtree):
+    #             continue
+    #
+    #         qtrain(model, quadtree, start, leaf, n_epoch=100, max_memory=8 * quadtree.count(), data_size=32)
+    # else:
+    #     model.load_weights("model.h5")
 
     return model

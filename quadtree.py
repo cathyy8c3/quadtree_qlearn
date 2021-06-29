@@ -192,8 +192,8 @@ class Tile:
             if leaves[i].color == PASSABLE:
                 envstate[i] = 1.0
 
-        envstate[state_index] = state_mark
         envstate[goal_index] = goal_mark
+        envstate[state_index] = state_mark
         temp = np.array([envstate])
 
         return temp
@@ -208,5 +208,7 @@ class Tile:
         return free
 
     def get_index(self):
-        index = leaves.index(self)
-        return index
+        for leaf in leaves:
+            if leaf.center() == self.center():
+                return leaves.index(leaf)
+        return -1

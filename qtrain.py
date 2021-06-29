@@ -1,9 +1,10 @@
-from qmaze import *
+from qmaze import Qmaze
 from experience import *
+from quadtree import leaves
 
 def qtrain(model, maze, start, goal, **opt):
     global epsilon
-    n_epoch = opt.get('n_epoch', 1000)
+    n_epoch = opt.get('n_epoch', 10)
     max_memory = opt.get('max_memory', 1000)
     data_size = opt.get('data_size', 50)
     weights_file = opt.get('weights_file', "")
@@ -46,8 +47,13 @@ def qtrain(model, maze, start, goal, **opt):
             prev_envstate = envstate
             # Get next action
             if np.random.rand() < epsilon:
+                temp = []
                 # print("Exploring")
-                action = random.randint(0, len(valid_actions)-1)
+                for leaf1 in leaves:
+                    for leaf2 in valid_actions:
+                        if leaf1.center() == leaf2.center():
+                            temp.append(leaves.index(leaf1))
+                action = random.choice(temp)
             else:
                 # print("Exploiting")
                 temp = experience.predict(prev_envstate)
@@ -137,13 +143,13 @@ def format_time(seconds):
         h = seconds / 3600.0
         return "%.2f hours" % (h,)
 
-def build_model(maze, lr=0.001):
+def build_model(maze_size, lr=0.001):
     model = Sequential()
-    model.add(Dense(maze.size, input_shape=(maze.size,)))
+    model.add(Dense(maze_size, input_shape=(maze_size,)))
     model.add(PReLU())
-    model.add(Dense(maze.size))
+    model.add(Dense(maze_size))
     model.add(PReLU())
-    model.add(Dense(maze.size))
+    model.add(Dense(maze_size))
     model.compile(optimizer='adam', loss='mse')
     print("Model built")
     return model
