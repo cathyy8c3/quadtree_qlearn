@@ -139,10 +139,10 @@ def play_game(model, qmaze, start):
 
         print(game_status)
         if game_status == 'win':
-            print("Win")
+            # print("Win")
             return True
         elif game_status == 'lose':
-            print("Lose")
+            # print("Lose")
             return False
 
 def run_game(model, qmaze, start):
@@ -163,7 +163,7 @@ def run_game(model, qmaze, start):
         # apply action, get rewards and new state
         envstate, reward, game_status = qmaze.act(action)
 
-        print(game_status)
+        # print(game_status)
 
         if game_status == 'win':
             return path
