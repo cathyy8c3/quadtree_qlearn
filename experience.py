@@ -1,7 +1,7 @@
 from __init__ import *
 
 class Experience(object):
-    def __init__(self, model, max_memory=100, discount=0.95):
+    def __init__(self, model, max_memory=100000, discount=0.95):
         self.model = model
         self.max_memory = max_memory
         self.discount = discount
@@ -19,7 +19,7 @@ class Experience(object):
     def predict(self, envstate):
         return self.model.predict(envstate)[0]
 
-    def get_data(self, data_size=10):
+    def get_data(self, data_size=100000):
         env_size = self.memory[0][0].shape[1]   # envstate 1d size (1st element of episode)
         mem_size = len(self.memory)
         data_size = min(mem_size, data_size)

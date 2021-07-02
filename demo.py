@@ -143,9 +143,9 @@ class MainObject:
 
         model = run_qlearn(self.quadtree, start, goal)
 
-        maze = Qmaze(self.quadtree, start, goal)
+        maze2 = Qmaze(self.quadtree, start, goal)
 
-        path = run_game(model, maze, start)
+        path = run_game(model, maze2, start)
         print(path)
 
         im = self.qtmapimage.copy()

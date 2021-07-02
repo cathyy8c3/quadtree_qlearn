@@ -45,7 +45,7 @@ def make_adjacent_function(quadtree):
         a = []
         for neighbour in neighbours(quadtree, node):
             assert neighbour.childs is None        # must be leaf node
-            if neighbour != node and neighbour.color != IMPASSABLE:
+            if neighbour.center() != node.center() and neighbour.color != IMPASSABLE:
                 a.append(neighbour)
 
         return a

@@ -11,6 +11,7 @@ def run_qlearn(quadtree, start, goal):
         trained = False
 
     model = build_model(len(leaves))
+    train = True
 
     if not trained:
         count = 0
@@ -24,7 +25,12 @@ def run_qlearn(quadtree, start, goal):
             elif not floodfill(start, leaf, quadtree):
                 continue
 
-            qtrain(model, quadtree, start, leaf, n_epoch=100, max_memory=8 * quadtree.count(), data_size=32)
+            if train:
+                qtrain(model, quadtree, start, leaf, n_epoch=100, max_memory=8 * quadtree.count(), data_size=32)
+                train = False
+                continue
+            model.load_weights("model.h5")
+            qtrain(model, quadtree, start, leaf, n_epoch=100, max_memory=8 * quadtree.count(), data_size=32, weights_file="model.h5")
     else:
         model.load_weights("model.h5")
 

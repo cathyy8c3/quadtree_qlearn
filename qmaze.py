@@ -1,5 +1,6 @@
 from graph import make_adjacent_function
 from quadtree import *
+from experience import Experience
 
 class Qmaze(object):
     def __init__(self, quadtree, start, goal):
@@ -8,6 +9,7 @@ class Qmaze(object):
         self.target = goal  # target cell where the "cheese" is
         self.free_cells = self._quadtree.passable_cells()
         self.determine = False
+        self.adjfunc = make_adjacent_function(quadtree)
 
         if start.center() == goal.center():
             raise Exception("Invalid Location: cannot route to itself")
@@ -119,8 +121,7 @@ class Qmaze(object):
         else:
             curr_state = cell
 
-        temp = make_adjacent_function(self.quadtree)
-        actions = temp(curr_state)
+        actions = self.adjfunc(curr_state)
 
         return actions
 
@@ -137,7 +138,12 @@ def play_game(model, qmaze, start):
         # apply action, get rewards and new state
         envstate, reward, game_status = qmaze.act(action)
 
-        print(game_status)
+        print(envstate)
+        print(action)
+        print(leaves[action])
+        print(qmaze.target)
+
+        # print(game_status)
         if game_status == 'win':
             # print("Win")
             return True
@@ -150,12 +156,16 @@ def run_game(model, qmaze, start):
     path = []
 
     envstate = qmaze.observe()
+    experience = Experience(model)
     while True:
         prev_envstate = envstate
 
         # get next action
-        q = model.predict(prev_envstate)
-        action = np.argmax(q[0])
+        temp = model.predict(prev_envstate)
+        q = model.predict(prev_envstate)[-1]
+        action = np.argmax(q)
+
+        curr_state, mode = qmaze.state
 
         move = leaves[action]
         path.append(move)
@@ -163,7 +173,13 @@ def run_game(model, qmaze, start):
         # apply action, get rewards and new state
         envstate, reward, game_status = qmaze.act(action)
 
-        # print(game_status)
+        print(prev_envstate)
+        print(str(action) + "\t" + str(mode))
+        print(q)
+        print(temp)
+        print(leaves)
+        print(game_status)
+        print()
 
         if game_status == 'win':
             return path

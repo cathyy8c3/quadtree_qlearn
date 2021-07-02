@@ -1,12 +1,12 @@
-from qmaze import Qmaze
+from qmaze import Qmaze, completion_check
 from experience import *
 from quadtree import leaves
 
 def qtrain(model, maze, start, goal, **opt):
     global epsilon
     n_epoch = opt.get('n_epoch', 10)
-    max_memory = opt.get('max_memory', 1000)
-    data_size = opt.get('data_size', 50)
+    max_memory = opt.get('max_memory', 100000)
+    data_size = opt.get('data_size', 100000)
     weights_file = opt.get('weights_file', "")
     name = opt.get('name', 'model')
     start_time = datetime.datetime.now()
@@ -95,8 +95,6 @@ def qtrain(model, maze, start, goal, **opt):
         if len(win_history) > hsize:
             win_rate = sum(win_history[-hsize:]) / hsize
 
-        # print(envstate)
-
         dt = datetime.datetime.now() - start_time
         t = format_time(dt.total_seconds())
         template = "Epoch: {:03d}/{:d} | Loss: {:.4f} | Episodes: {:d} | Win count: {:d} | Win rate: {:.3f} | time: {}"
@@ -104,17 +102,10 @@ def qtrain(model, maze, start, goal, **opt):
         # we simply check if training has exhausted all free cells and if in all
         # cases the agent won
         if win_rate > 0.9: epsilon = 0.05
-        # print("Testing: ")
-        # print(sum(win_history[-hsize:]))
-        # print(hsize)
         # if sum(win_history[-hsize:]) == hsize and completion_check(model, qmaze):
         if sum(win_history[-hsize:]) == hsize:
             print("Reached 100%% win rate at epoch: %d" % (epoch,))
             break
-        # if not sum(win_history[-hsize:]) == hsize and completion_check(model, qmaze):
-        #     print("Not First")
-        # if sum(win_history[-hsize:]) == hsize and not completion_check(model, qmaze):
-        #     print("Not Second")
 
     # Save trained model weights and architecture, this will be used by the visualization code
     h5file = name + ".h5"

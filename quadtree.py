@@ -67,8 +67,8 @@ class Tile:
     def center(self):
         return self.bb.center()
 
-    def equals(self, other):
-        return self.center() == other.center()
+    # def equals(self, other):
+    #     return self.center() == other.center()
 
     def depth(self):
         """
@@ -152,7 +152,8 @@ class Tile:
                     if i > max_color_count:
                         max_color_count = i
                         max_color = j
-                self.color = max_color
+                # self.color = max_color
+                self.color = PASSABLE
                 # self.color = image.getcolors()[-1][1]
             else:
                 # not a leaf Tile
@@ -183,9 +184,9 @@ class Tile:
 
         envstate = np.zeros(len(leaves))
         for i in range(len(leaves)):
-            if (state.center() == leaves[i].center()):
+            if state.center() == leaves[i].center():
                 state_index = i
-            if (goal.center() == leaves[i].center()):
+            if goal.center() == leaves[i].center():
                 goal_index = i
 
         for i in range(len(envstate)):
