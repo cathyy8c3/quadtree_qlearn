@@ -152,8 +152,8 @@ class Tile:
                     if i > max_color_count:
                         max_color_count = i
                         max_color = j
-                # self.color = max_color
-                self.color = PASSABLE
+                self.color = max_color
+                # self.color = PASSABLE
                 # self.color = image.getcolors()[-1][1]
             else:
                 # not a leaf Tile
