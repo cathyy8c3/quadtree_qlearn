@@ -12,3 +12,14 @@ goal_mark = 3
 
 # Exploration factor
 epsilon = 0.1
+
+max_episodes = 20
+max_steps = 500
+batch_size = 32
+
+gamma = 0.99
+tau = 1e-2
+buffer_maxlen = 100000
+critic_lr = 1e-3
+actor_lr = 1e-3
+

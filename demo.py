@@ -1,4 +1,4 @@
-""" demonstration of A* routing on a quadtree representation of a 2D map
+""" demonstration of A* routing on a qmaze representation of a 2D map
 
     (c) Volker Poplawski 2018
 """

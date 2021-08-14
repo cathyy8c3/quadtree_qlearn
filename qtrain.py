@@ -48,22 +48,20 @@ def qtrain(model, maze, start, goal, **opt):
             # Get next action
             if np.random.rand() < epsilon:
                 temp = []
-                # print("Exploring")
-                for leaf1 in leaves:
+                print("Exploring")
+                for leaf1 in range(len(leaves)):
                     for leaf2 in valid_actions:
-                        if leaf1.center() == leaf2.center():
-                            temp.append(leaves.index(leaf1))
+                        if leaves[leaf1].center() == leaf2.center():
+                            temp.append(leaf1)
                 action = random.choice(temp)
             else:
-                # print("Exploiting")
+                print("Exploiting")
                 temp = experience.predict(prev_envstate)
+                print(model.predict(prev_envstate))
                 action = np.argmax(temp)
 
             # Apply action, get reward and new envstate
             envstate, reward, game_status = qmaze.act(action)
-            # print(qmaze.state)
-            # print(qmaze.target)
-            # print("Status: " + str(game_status))
 
             if game_status == 'win':
                 win_history.append(1)
@@ -144,3 +142,4 @@ def build_model(maze_size, lr=0.001):
     model.compile(optimizer='adam', loss='mse')
     print("Model built")
     return model
+

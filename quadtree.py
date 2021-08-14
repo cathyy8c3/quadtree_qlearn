@@ -1,4 +1,4 @@
-""" quadtree on 2D image
+""" qmaze on 2D image
 
     (c) Volker Poplawski 2018
 """
@@ -51,7 +51,7 @@ class Tile:
     """
     QuadTree on 2D image map
     
-    Recursive data structure. Class serves as the root quadtree, subtrees and leaf Tiles.
+    Recursive data structure. Class serves as the root qmaze, subtrees and leaf Tiles.
     A Tile has either exactly four child Tiles or no child Tiles.
     Tiles with no child Tiles are leaf Tiles and have a uniform color.
     """
@@ -72,7 +72,7 @@ class Tile:
 
     def depth(self):
         """
-        Depth of quadtree/subtree
+        Depth of qmaze/subtree
         """
         if not self.childs:
             return self.level
@@ -82,7 +82,7 @@ class Tile:
         
     def count(self, cnt = 0):
         """
-        Number of tiles in quadtree/subtree
+        Number of tiles in qmaze/subtree
         """
 
         if not self.childs:
@@ -97,7 +97,7 @@ class Tile:
 
     def get(self, x, y):
         """
-        Get leaf Tile containing position x,y from quadtree/subtree
+        Get leaf Tile containing position x,y from qmaze/subtree
         """
         if not self.childs:
             return self
@@ -117,7 +117,7 @@ class Tile:
 
     def intersect(self, bbox, retlist):
         """
-        Intersect quadtree/subtree with BoundingBox
+        Intersect qmaze/subtree with BoundingBox
         return list of intersecting i.e. overlapping leaf Tiles
         """ 
         if not self.bb.intersects(bbox):
@@ -152,9 +152,9 @@ class Tile:
                     if i > max_color_count:
                         max_color_count = i
                         max_color = j
-                self.color = max_color
-                # self.color = PASSABLE
-                # self.color = image.getcolors()[-1][1]
+                # self.color = max_color
+                self.color = PASSABLE
+                # TODO: fix self.color
             else:
                 # not a leaf Tile
                 # split Tile and do recursion on childs

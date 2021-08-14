@@ -19,10 +19,10 @@ def manhatten(start, end):
 
 def neighbours(qt, tile):
     """
-    Return neighbour tiles for tile in quadtree.
+    Return neighbour tiles for tile in qmaze.
     
-    There are more efficient ways to find neighbouring tiles in a quadtree!
-    Here we simply intersect the whole quadtree with a slightly expanded bounding box
+    There are more efficient ways to find neighbouring tiles in a qmaze!
+    Here we simply intersect the whole qmaze with a slightly expanded bounding box
     of the query tile.
     """
     neigh = []
@@ -35,7 +35,7 @@ def make_adjacent_function(quadtree):
     """
     Return a function suitable as adjacent function as parameter to A*
     
-    this wrapper function captures the quadtree in a closure of the adjacent function
+    this wrapper function captures the qmaze in a closure of the adjacent function
     """
     def adjacent(node):
         """

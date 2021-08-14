@@ -1,3 +1,5 @@
+import numpy as np
+
 from __init__ import *
 
 class Experience(object):
@@ -19,7 +21,7 @@ class Experience(object):
     def predict(self, envstate):
         return self.model.predict(envstate)[0]
 
-    def get_data(self, data_size=100000):
+    def get_data(self, data_size=1000):
         env_size = self.memory[0][0].shape[1]   # envstate 1d size (1st element of episode)
         mem_size = len(self.memory)
         data_size = min(mem_size, data_size)
@@ -30,7 +32,7 @@ class Experience(object):
             inputs[i] = envstate
             # There should be no target values for actions not taken.
             targets[i] = self.predict(envstate)
-            # Q_sa = derived policy = max quality env/action = max_a' Q(s', a')
+            # Q_sa = derived policy = max quality qmaze/action = max_a' Q(s', a')
             Q_sa = np.max(self.predict(envstate_next))
             if game_over:
                 targets[i, action] = reward
@@ -38,3 +40,22 @@ class Experience(object):
                 # reward + gamma * max_a' Q(s', a')
                 targets[i, action] = reward + self.discount * Q_sa
         return inputs, targets
+
+    def get_data_ddpg(self, data_size=1000):
+        env_size = self.memory[0][0].shape[1]   # envstate 1d size (1st element of episode)
+        mem_size = len(self.memory)
+        data_size = min(mem_size, data_size)
+        inputs = np.zeros((data_size, env_size))
+        targets = np.zeros((data_size, self.num_actions))
+        actions = np.zeros((data_size, self.num_actions))
+        rewards = np.zeros((data_size, self.num_actions))
+        dones = np.zeros((data_size, self.num_actions))
+        for i, j in enumerate(np.random.choice(range(mem_size), data_size, replace=False)):
+            envstate, action, reward, envstate_next, game_over = self.memory[j]
+            inputs[i] = envstate
+            actions[i] = action
+            targets[i] = envstate_next
+            rewards[i] = reward
+            dones[i] = game_over
+
+        return inputs, targets, actions, rewards, dones

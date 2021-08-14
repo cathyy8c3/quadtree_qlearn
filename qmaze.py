@@ -1,6 +1,7 @@
-from graph import make_adjacent_function
+from graph import make_adjacent_function, euclidian
 from quadtree import *
 from experience import Experience
+import random
 
 class Qmaze(object):
     def __init__(self, quadtree, start, goal):
@@ -58,10 +59,6 @@ class Qmaze(object):
         self.state = (next_state, nmode)
         # else:
 
-    def action_prob(self, action):
-
-        return None
-
     def get_reward(self):
         curr_state, mode = self.state
         size = self.size
@@ -83,6 +80,7 @@ class Qmaze(object):
             return -0.04
 
     def act(self, action):
+        # action = self.next_pos(action)
         self.update_state(action)
         reward = self.get_reward()
         self.total_reward += reward
@@ -97,6 +95,15 @@ class Qmaze(object):
         # print("Status: " + str(status))
         # print(envstate)
         # print()
+
+        return envstate, reward, status
+
+    def act_game(self, action):
+        self.update_state(action)
+        reward = self.get_reward()
+        self.total_reward += reward
+        status = self.game_status()
+        envstate = self.observe()
 
         return envstate, reward, status
 
@@ -125,6 +132,54 @@ class Qmaze(object):
 
         return actions
 
+    def action_prob(self, heurfunc, action):
+        curr_state, mode = self.state
+        goal = self.target
+        valid_actions = self.valid_actions(curr_state)
+        dist = dict()
+        total_dist = 0.0
+        curr_dist = heurfunc(leaves[action], goal)
+
+        for leaf in valid_actions:
+            if heurfunc(leaf, goal) <= curr_dist:
+                dist[leaf] = heurfunc(leaf, goal)
+                total_dist += dist[leaf]
+
+        keys = []
+        vals = []
+        for key in dist.keys():
+            keys.append(key)
+            try:
+                d = 1/dist[key]
+            except:
+                d = 1.0
+            vals.append(d)
+
+        # print(keys)
+        # print(vals)
+        # # # print()
+        # print(dist)
+        # print(total_dist)
+        # # # print(random.choices(keys, weights = vals)[0])
+        # # # print(type(random.choices(keys, weights = vals)[0]))
+        # print()
+        if len(keys) == 0:
+            return action
+        elif sum(vals) == 0:
+            return action
+        return random.choices(keys, weights = vals)[0].get_index()
+
+    def next_pos(self, action):
+        if self.determine:
+            next_state = action
+            self.determine = False
+        else:
+            action2 = self.action_prob(euclidian, action)
+            self.determine = True
+            next_state = self.next_pos(action2)
+
+        return next_state
+
 def play_game(model, qmaze, start):
     qmaze.reset(start)
 
@@ -136,7 +191,7 @@ def play_game(model, qmaze, start):
         action = np.argmax(q[0])
 
         # apply action, get rewards and new state
-        envstate, reward, game_status = qmaze.act(action)
+        envstate, reward, game_status = qmaze.act_game(action)
 
         print(envstate)
         print(action)
@@ -154,6 +209,7 @@ def play_game(model, qmaze, start):
 def run_game(model, qmaze, start):
     qmaze.reset(start)
     path = []
+    path2 = []
 
     envstate = qmaze.observe()
     experience = Experience(model)
@@ -162,16 +218,14 @@ def run_game(model, qmaze, start):
 
         # get next action
         temp = model.predict(prev_envstate)
-        q = model.predict(prev_envstate)[-1]
+        q = model.predict(prev_envstate)[0]
         action = np.argmax(q)
 
-        curr_state, mode = qmaze.state
-
-        move = leaves[action]
-        path.append(move)
-
         # apply action, get rewards and new state
-        envstate, reward, game_status = qmaze.act(action)
+        envstate, reward, game_status = qmaze.act_game(action)
+
+        curr_state, mode = qmaze.state
+        path.append(curr_state)
 
         print(prev_envstate)
         print(str(action) + "\t" + str(mode))
@@ -184,7 +238,7 @@ def run_game(model, qmaze, start):
         if game_status == 'win':
             return path
         elif game_status == 'lose':
-            return []
+            return path
 
 def completion_check(model, qmaze):
     for cell in qmaze.free_cells:
